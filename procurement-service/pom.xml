@@ -53,6 +53,19 @@
             <artifactId>dropwizard-client</artifactId>
             <version>${dropwizard.version}</version>
 		</dependency>
+		<!-- Json Simple for JSONObject -->
+		<!-- <dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1</version>
+  		</dependency>  -->
+  		<!-- Json Serializer -->
+  		<dependency>
+	        <groupId>net.sf.json-lib</groupId>
+	        <artifactId>json-lib</artifactId>
+	        <version>2.2.3</version>
+	        <classifier>jdk15</classifier>
+    	</dependency>
 	</dependencies>
 
 	<build>

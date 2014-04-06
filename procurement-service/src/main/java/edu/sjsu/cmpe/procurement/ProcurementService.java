@@ -16,6 +16,11 @@ import edu.sjsu.cmpe.procurement.config.ProcurementServiceConfiguration;
 public class ProcurementService extends Service<ProcurementServiceConfiguration> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
+    
+    String apolloUser = null;
+    String apolloPassword = null;
+    String apolloHost = null;
+    String apolloPort = null;
 
     /**
      * FIXME: THIS IS A HACK!
@@ -57,6 +62,13 @@ public class ProcurementService extends Service<ProcurementServiceConfiguration>
 	String topicName = configuration.getStompTopicPrefix();
 	log.debug("Queue name is {}. Topic is {}", queueName, topicName);
 	// TODO: Apollo STOMP Broker URL and login
-
+	apolloUser = configuration.getApolloUser();
+	apolloPassword = configuration.getApolloPassword();
+	apolloHost = configuration.getApolloHost();
+	apolloPort = configuration.getApolloPort();
+	log.debug("{} - Queue name is {}. Topic name is {}. User name is {}. Host is {}. Port is {}",
+		 queueName,	topicName, apolloUser, apolloHost, apolloPort);
+	ApolloConfig configure = new ApolloConfig(apolloUser, apolloPassword, 
+			apolloHost, apolloPort, queueName, topicName);
     }
 }

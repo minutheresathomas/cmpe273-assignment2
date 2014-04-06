@@ -1,5 +1,6 @@
 package edu.sjsu.cmpe.library.api.resources;
 
+import javax.jms.JMSException;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -17,11 +18,13 @@ import javax.ws.rs.core.Response;
 import com.yammer.dropwizard.jersey.params.LongParam;
 import com.yammer.metrics.annotation.Timed;
 
+import edu.sjsu.cmpe.library.config.LibraryServiceConfiguration;
 import edu.sjsu.cmpe.library.domain.Book;
 import edu.sjsu.cmpe.library.domain.Book.Status;
 import edu.sjsu.cmpe.library.dto.BookDto;
 import edu.sjsu.cmpe.library.dto.BooksDto;
 import edu.sjsu.cmpe.library.dto.LinkDto;
+import edu.sjsu.cmpe.library.message.broker.ptp.Producer;
 import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
 
 @Path("/v1/books")
@@ -30,6 +33,8 @@ import edu.sjsu.cmpe.library.repository.BookRepositoryInterface;
 public class BookResource {
     /** bookRepository instance */
     private final BookRepositoryInterface bookRepository;
+    
+    private final LibraryServiceConfiguration serviceConfig;
 
     /**
      * BookResource constructor
@@ -37,8 +42,10 @@ public class BookResource {
      * @param bookRepository
      *            a BookRepository instance
      */
-    public BookResource(BookRepositoryInterface bookRepository) {
+    public BookResource(BookRepositoryInterface bookRepository,
+    		LibraryServiceConfiguration serviceConfig) {
 	this.bookRepository = bookRepository;
+	this.serviceConfig = serviceConfig;
     }
 
     @GET
@@ -85,10 +92,17 @@ public class BookResource {
     @Path("/{isbn}")
     @Timed(name = "update-book-status")
     public Response updateBookStatus(@PathParam("isbn") LongParam isbn,
-	    @DefaultValue("available") @QueryParam("status") Status status) {
+	    @DefaultValue("available") @QueryParam("status") Status status) throws JMSException {
 	Book book = bookRepository.getBookByISBN(isbn.get());
+	System.out.println("status is : "+status);
 	book.setStatus(status);
-
+	System.out.println("book.status is : "+book.getStatus());
+	if("lost".equals(status.getValue()))
+	{
+		System.out.println("inside check : book.status is : "+book.getStatus());
+			Producer producer = new Producer();
+			producer.sendMessage(isbn, serviceConfig);
+	}
 	BookDto bookResponse = new BookDto(book);
 	String location = "/books/" + book.getIsbn();
 	bookResponse.addLink(new LinkDto("view-book", location, "GET"));
